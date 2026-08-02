@@ -87,11 +87,17 @@
       issues.tinyTapTargets.push({ el: sel(el), size: Math.round(r.width) + "x" + Math.round(r.height) });
     }
 
-    // button/link text wrapped onto 2+ lines (usually a squeezed layout)
+    // button/link text wrapped onto 2+ lines (usually a squeezed layout);
+    // measure actual text rects, not element height — fixed-height icon+label
+    // buttons (h-11 etc.) are single-line despite being tall
     if (issues.wrappedControls.length < CAP && (el.tagName === "BUTTON" || el.tagName === "A") &&
         s.display !== "inline" && el.textContent.trim()) {
       const lh = parseFloat(s.lineHeight) || parseFloat(s.fontSize) * 1.2;
-      if (r.height > lh * 1.9) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const tops = [...range.getClientRects()].filter(x => x.width > 1 && x.height > 1).map(x => x.top);
+      range.detach();
+      if (tops.length && Math.max(...tops) - Math.min(...tops) > lh * 0.8) {
         issues.wrappedControls.push({ el: sel(el), height: Math.round(r.height) });
       }
     }

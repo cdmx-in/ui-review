@@ -52,8 +52,12 @@ agent-browser network requests --status 400-599     # failed assets/API calls
 agent-browser close
 ```
 
-Optional extras (newer agent-browser builds — skip silently if the command
-prints generic help; suggest `agent-browser upgrade` in the report footer):
+Optional extras (newer agent-browser builds only). Unsupported builds respond
+in either of two ways — generic help text, or a JSON error like
+`{"error":"Unknown command: a11y","success":false}`. Both mean "unsupported":
+do not parse them as results; skip the step and suggest `agent-browser
+upgrade` in the report footer. (`vitals --json` works from 0.31.x; `a11y`
+requires a newer build.)
 
 ```bash
 agent-browser a11y --tags wcag2aa --json    # axe-core audit: contrast, labels, alt text
