@@ -1,0 +1,28 @@
+<svg width="680" height="252" viewBox="0 0 680 252" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ui-review demo">
+  <style>
+    text { font-family: 'Cascadia Code', Consolas, Menlo, monospace; font-size: 15px; fill: #E2E8F0; }
+    .grn { fill: #34D399 } .red { fill: #F87171 } .dim { fill: #94A3B8 } .cyn { fill: #38BDF8 } .yel { fill: #FBBF24 }
+    .l { opacity: 0; animation-duration: 11s; animation-iteration-count: infinite; animation-timing-function: linear; }
+    .l1 { animation-name: k1 } .l2 { animation-name: k2 } .l3 { animation-name: k3 } .l4 { animation-name: k4 }
+    .l5 { animation-name: k5 } .l6 { animation-name: k6 } .l7 { animation-name: k7 } .l8 { animation-name: k8 }
+    @keyframes k1 { 0%,2%{opacity:0} 4%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k2 { 0%,12%{opacity:0} 14%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k3 { 0%,22%{opacity:0} 24%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k4 { 0%,32%{opacity:0} 34%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k5 { 0%,42%{opacity:0} 44%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k6 { 0%,54%{opacity:0} 56%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k7 { 0%,66%{opacity:0} 68%,94%{opacity:1} 98%,100%{opacity:0} }
+    @keyframes k8 { 0%,80%{opacity:0} 82%,94%{opacity:1} 98%,100%{opacity:0} }
+  </style>
+  <rect width="680" height="252" rx="12" fill="#0F172A"/>
+  <circle cx="24" cy="24" r="6" fill="#F87171"/><circle cx="46" cy="24" r="6" fill="#FBBF24"/><circle cx="68" cy="24" r="6" fill="#34D399"/>
+
+  <text x="24" y="62" class="l l1"><tspan class="dim">$</tspan> /ui-review http://localhost:3000</text>
+  <text x="24" y="88" class="l l2"><tspan class="grn">✓</tspan> mobile 360x800 <tspan class="dim">— detect + screenshot</tspan> <tspan class="red">3 issues</tspan></text>
+  <text x="24" y="110" class="l l3"><tspan class="grn">✓</tspan> tablet 768x1024 <tspan class="red">1 issue</tspan></text>
+  <text x="24" y="132" class="l l4"><tspan class="grn">✓</tspan> laptop 1366x768 <tspan class="grn">clean</tspan>  <tspan class="grn">✓</tspan> desktop 1920x1080 <tspan class="grn">clean</tspan></text>
+  <text x="24" y="162" class="l l5"><tspan class="red">[broken]</tspan> div.hero <tspan class="dim">— fixed 1400px width forces horizontal scroll</tspan></text>
+  <text x="24" y="184" class="l l6"><tspan class="dim">         ↳ mapped to</tspan> <tspan class="cyn">src/components/Hero.css:12</tspan> <tspan class="dim">· fix: max-width:100%</tspan></text>
+  <text x="24" y="206" class="l l7"><tspan class="yel">[degraded]</tspan> button.icon-btn <tspan class="dim">— 18x18px tap target (WCAG 2.5.8)</tspan></text>
+  <text x="24" y="232" class="l l8"><tspan class="grn">→</tspan> report written to <tspan class="cyn">.ui-review/root/REPORT.md</tspan></text>
+</svg>
