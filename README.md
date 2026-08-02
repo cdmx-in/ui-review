@@ -27,19 +27,32 @@ Programmatic checks run in-page via `eval`; screenshots are then visually inspec
    npm i -g agent-browser && agent-browser install
    ```
 
-2. Clone this repo into your Claude Code skills folder:
+2. In any Claude Code session, run:
 
-   ```bash
-   git clone https://github.com/roney492/ui-review ~/.claude/skills/ui-review
+   ```
+   /plugin marketplace add roney492/ui-review
+   /plugin install ui-review@ui-review
    ```
 
-   Windows (PowerShell):
+That's it. No tokens or accounts needed — it installs straight from this public GitHub repo.
 
-   ```powershell
-   git clone https://github.com/roney492/ui-review "$env:USERPROFILE\.claude\skills\ui-review"
-   ```
+<details>
+<summary>Alternative: manual install via git clone</summary>
 
-That's it — Claude Code auto-discovers skills in that folder.
+```bash
+git clone https://github.com/roney492/ui-review /tmp/ui-review
+cp -r /tmp/ui-review/skills/ui-review ~/.claude/skills/ui-review
+```
+
+Windows (PowerShell):
+
+```powershell
+git clone https://github.com/roney492/ui-review "$env:TEMP\ui-review"
+Copy-Item -Recurse "$env:TEMP\ui-review\skills\ui-review" "$env:USERPROFILE\.claude\skills\ui-review"
+```
+
+Claude Code auto-discovers skills in `~/.claude/skills/`.
+</details>
 
 ## Use
 

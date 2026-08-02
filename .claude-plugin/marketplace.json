@@ -1,0 +1,13 @@
+{
+  "name": "ui-review",
+  "owner": {
+    "name": "roney492"
+  },
+  "plugins": [
+    {
+      "name": "ui-review",
+      "source": "./",
+      "description": "Automated UI/UX review via agent-browser: overflow, wrapping, responsiveness across breakpoints, with baseline/diff regression mode."
+    }
+  ]
+}
