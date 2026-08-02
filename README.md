@@ -70,13 +70,31 @@ In any Claude Code session:
 /ui-review http://localhost:3000
 ```
 
-or just say:
+or just say "review the UI", "check responsiveness of my app", "find layout bugs on staging.example.com". With no URL, it probes common local dev ports (3000, 5173, 8080, 4200). Ask for fixes ("review the UI and fix what you find") and it will patch the source, hot-reload, and re-verify.
 
-- "review the UI"
-- "check responsiveness of my app"
-- "find layout bugs on staging.example.com"
+### Modes
 
-With no URL, it probes common local dev ports (3000, 5173, 8080, 4200). Ask for fixes ("review the UI and fix what you find") and it will patch the source, hot-reload, and re-verify.
+| Mode | Invoke | What it does |
+|---|---|---|
+| **Standard** | `/ui-review [url]` | Sweep 4 breakpoints: in-page defect detection + full-page screenshots + console/network errors, then visual inspection. Writes `.ui-review/<page>/REPORT.md`. |
+| **Baseline** | `/ui-review baseline [url]` | Store per-breakpoint screenshots + defect JSON in `.ui-review/` (commit it). Known defects go in `KNOWN.md` so they aren't re-reported. |
+| **Compare** | `/ui-review [url]` (baseline exists) | Pixel-diff + JSON-diff against the baseline; only inspects breakpoints that changed. Reports regressed / fixed / unchanged. |
+| **Thorough** | `/ui-review thorough [url]` | Standard sweep + deep scenario packs: interaction/state QA, content & i18n stress injection, rendering environments. |
+
+### Example output
+
+See [examples/demo/REPORT.md](examples/demo/REPORT.md) — a real run against [a deliberately broken page](examples/demo/demo.html): the detector catches the fixed-width hero forcing horizontal scroll, missing viewport meta, `NaN`/`undefined` leaking into copy, clipped German heading, an 18px close button, a broken image, a wrapping button label, and 10px text — each with severity, source line, and a one-line fix.
+
+## Works with other agents
+
+Nothing here is Claude-specific: the skill is a standard [SKILL.md](https://github.com/anthropics/skills) plus one JavaScript file, and the only dependency is the agent-browser CLI. Any SKILL.md-compatible agent (Codex, Cursor, Gemini CLI, Windsurf, ...) can use it — point your agent's skills directory at `skills/ui-review/`.
+
+## Troubleshooting
+
+- **`agent-browser: command not found`** — `npm i -g agent-browser && agent-browser install` (downloads Chrome for Testing on first run). Diagnose anything else with `agent-browser doctor`.
+- **`a11y` or `vitals` returns `{"error":"Unknown command...","success":false}` or generic help** — your agent-browser build predates that command. These steps are optional; the skill skips them. `agent-browser upgrade` to get them.
+- **Screenshots are blank / page never loads** — the target is probably behind auth. Log in once with `agent-browser auth save` or reuse cookies via `agent-browser state save/load`.
+- **Windows** — commands run fine from PowerShell or Git Bash; the skill uses forward-slash paths throughout.
 
 ## Layout
 

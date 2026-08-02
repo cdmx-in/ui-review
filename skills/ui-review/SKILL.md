@@ -188,3 +188,26 @@ One section per breakpoint, ranked by severity. For each finding:
 Severity: **broken** (content unusable/unreadable) > **degraded** (works but
 looks wrong) > **polish**. End with console/page errors and failed network
 requests if any. If everything passes, say so plainly — don't invent findings.
+
+Besides the chat summary, always write the full report to
+`.ui-review/<page-slug>/REPORT.md` in the reviewed project (same folder the
+baselines use) so it can be committed, diffed, and shared. Structure:
+
+```markdown
+# ui-review: <url> — <date>
+Mode: standard | thorough | compare · agent-browser <version> · ui-review <version>
+
+## Summary
+<counts by severity, one-line verdict>
+
+## <breakpoint>  (repeat per breakpoint)
+| Sev | Element | Issue | Source | Fix |
+...
+
+## Console / network
+...
+```
+
+Reference screenshots by relative path (`./mobile.png`) when they're kept in
+the same folder. In compare mode the report lists regressed/fixed/unchanged
+instead of re-describing known findings.
