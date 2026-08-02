@@ -32,14 +32,14 @@ Programmatic checks run in-page via `eval`; screenshots are then visually inspec
 2. In any Claude Code session, run:
 
    ```
-   /plugin marketplace add roney492/ui-review
+   /plugin marketplace add cdmx-in/ui-review
    /plugin install ui-review@ui-review
    ```
 
    Or with the [skills](https://skills.sh) CLI:
 
    ```bash
-   npx skills add roney492/ui-review
+   npx skills add cdmx-in/ui-review
    ```
 
 That's it. No tokens or accounts needed — it installs straight from this public GitHub repo.
@@ -48,14 +48,14 @@ That's it. No tokens or accounts needed — it installs straight from this publi
 <summary>Alternative: manual install via git clone</summary>
 
 ```bash
-git clone https://github.com/roney492/ui-review /tmp/ui-review
+git clone https://github.com/cdmx-in/ui-review /tmp/ui-review
 cp -r /tmp/ui-review/skills/ui-review ~/.claude/skills/ui-review
 ```
 
 Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/roney492/ui-review "$env:TEMP\ui-review"
+git clone https://github.com/cdmx-in/ui-review "$env:TEMP\ui-review"
 Copy-Item -Recurse "$env:TEMP\ui-review\skills\ui-review" "$env:USERPROFILE\.claude\skills\ui-review"
 ```
 
