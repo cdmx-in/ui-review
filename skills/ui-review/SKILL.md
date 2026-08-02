@@ -119,6 +119,34 @@ Report only deltas: `regressed / fixed / unchanged` per breakpoint, plus
 anything in KNOWN.md that got fixed (suggest pruning it). After the user
 confirms current state is good, offer to refresh the baseline.
 
+## Thorough mode (deep QA scenarios)
+
+`/ui-review thorough [url]` (or "deep review", "full QA"). Run the standard
+sweep first, then pick scenario packs by what the page actually is — don't run
+everything everywhere:
+
+- [references/interaction.md](references/interaction.md) — focus/keyboard,
+  modals, loading/empty/error states, forms, silent network failures,
+  double-submit, invisible overlays. For any app with forms, modals, or API
+  calls.
+- [references/content-stress.md](references/content-stress.md) — long-string
+  and i18n injection, 200% zoom (≡ 640x512 viewport) and 320px reflow (WCAG
+  1.4.4/1.4.10), list-size extremes (0/1/1000, page-9999), pluralization and
+  template leaks, truncation correctness. For anything rendering user data.
+- [references/rendering.md](references/rendering.md) — dark-mode contrast and
+  baked-white images, prefers-reduced-motion, sticky/fixed occlusion, hi-DPI
+  blur, fonts (FOIT/tofu/metric jump), landscape phones, 100vh/safe-area. For
+  themed or animated UIs.
+
+Rules:
+- Stress injections mutate the DOM — run them last on each page and reload
+  between packs.
+- Some checks are static-only in headless Chrome (iOS 100vh, safe-area,
+  scrollbar gutter, cross-engine CSS): report as "flagged, verify on
+  device/engine", never as confirmed failures.
+- Within each pack, run the top-tier recipes first; go deeper only where the
+  page type warrants it.
+
 ## Visual inspection (mandatory)
 
 The JS checks can't judge aesthetics. Read every screenshot with the Read tool

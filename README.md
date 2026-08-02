@@ -17,6 +17,8 @@ It checks every common breakpoint (mobile 360, tablet 768, laptop 1366, desktop 
 
 Programmatic checks run in-page via `eval`; screenshots are then visually inspected by the model for things JS can't judge (misalignment, bad truncation, contrast). When reviewing a local dev server with the source code present, findings are mapped back to `file:line` and can be fixed in place.
 
+**Thorough mode** (`/ui-review thorough`): three deep scenario packs beyond the standard sweep — interaction/state QA (focus indicators, modal focus traps, silent network failures, double-submit, empty/loading states), content stress (long-string and i18n injection, 200% zoom / 320px reflow per WCAG 1.4.4/1.4.10, 0/1/1000-item lists), and rendering environments (dark-mode contrast, reduced motion, sticky-header occlusion, hi-DPI blur, font loading).
+
 **Regression mode**: `/ui-review baseline` stores per-breakpoint screenshots + defect JSON in `.ui-review/` (commit it). Later runs pixel-diff and JSON-diff against the baseline and only spend vision tokens on breakpoints that actually changed — unchanged pages cost near zero.
 
 ## Install
@@ -32,6 +34,12 @@ Programmatic checks run in-page via `eval`; screenshots are then visually inspec
    ```
    /plugin marketplace add roney492/ui-review
    /plugin install ui-review@ui-review
+   ```
+
+   Or with the [skills](https://skills.sh) CLI:
+
+   ```bash
+   npx skills add roney492/ui-review
    ```
 
 That's it. No tokens or accounts needed — it installs straight from this public GitHub repo.
@@ -73,6 +81,12 @@ With no URL, it probes common local dev ports (3000, 5173, 8080, 4200). Ask for 
 ## Layout
 
 ```
-SKILL.md            # the skill definition Claude Code follows
-scripts/detect.js   # in-page defect detector, piped via `agent-browser eval --stdin`
+skills/ui-review/SKILL.md      # the skill definition Claude Code follows
+skills/ui-review/scripts/      # in-page defect detector (eval --stdin)
+skills/ui-review/references/   # thorough-mode scenario packs with detection recipes
+.claude-plugin/                # plugin + marketplace manifests
 ```
+
+## License
+
+MIT © [Codemax IT Solutions Pvt. Ltd.](https://cdmx.in)
