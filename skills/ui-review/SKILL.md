@@ -60,6 +60,12 @@ SHOTS=<absolute scratch dir>/shots && mkdir -p "$SHOTS"
 agent-browser open <url>
 agent-browser wait --load networkidle
 
+# Settle rendering before ANY measurement: freeze animations/transitions and
+# wait for webfonts. Font swap and mid-flight transitions cause false
+# clipped/wrapped/overlap findings and noisy pixel diffs. Re-run this after
+# any reload or SPA navigation.
+agent-browser eval "const s=document.createElement('style');s.textContent='*,*::before,*::after{animation:none!important;transition:none!important}';document.head.append(s);document.fonts.ready.then(()=>'settled')"
+
 # If the page renders a list or table: before the breakpoint loop, select or
 # load the row/item with the widest realistic content in the current data
 # (most tags/badges, longest strings) — not the first row, not an empty state.
@@ -108,9 +114,15 @@ Notes:
   `json.loads(json.loads(out))`). Categories:
   `viewportMetaMissing`, `horizontalScroll` + `offenders`, `clippedText`,
   `overlaps`, `tinyTapTargets`, `brokenImages`, `distortedImages`,
-  `overflowingMedia`, `smallText`, `wrappedControls`, `placeholderText`.
+  `overflowingMedia`, `smallText`, `wrappedControls`, `placeholderText`,
+  `fixedOverlays` (viewport % covered by fixed/sticky bars).
   Each entry has a readable selector.
 - Only flag `tinyTapTargets` and `smallText` as real issues on mobile/tablet.
+  Flag `fixedOverlays` as degraded when `pct` exceeds ~25 on mobile/tablet
+  (sticky header + cookie banner + bottom nav eating the screen).
+- detect.js pierces open shadow roots. Closed shadow roots and iframes are
+  NOT reachable — if the page relies on them, say so in the report as
+  uncovered surface instead of implying full coverage.
 - If the app has a dark mode: `agent-browser set media dark`, re-screenshot at
   laptop size, and compare — `agent-browser diff screenshot --baseline
   shots/laptop.png -o shots/dark-diff.png` highlights unstyled regions.
@@ -135,6 +147,20 @@ loop, but store artifacts instead of writing a report:
 Do the visual inspection once here — a baseline with known defects should have
 them listed in `.ui-review/<page-slug>/KNOWN.md` so later runs don't re-report
 them.
+
+**Masking dynamic regions**: pages with timestamps, live counters, ads, or
+carousels pixel-diff "changed" on every run forever — and a check that always
+fails gets ignored. If `.ui-review/<slug>/ignore.txt` exists (one CSS selector
+per line), hide each match before **every** screenshot, in baseline and
+compare runs alike:
+
+```bash
+agent-browser eval "document.querySelectorAll('<selector>').forEach(e=>e.style.visibility='hidden')"
+```
+
+`visibility` rather than `display`, so layout doesn't shift. When a compare
+run keeps flagging an intentionally-live region, suggest adding its selector
+to ignore.txt.
 
 **Compare** (default when a baseline exists): per breakpoint —
 
@@ -286,3 +312,15 @@ Mode: standard | thorough | compare · agent-browser <version> · ui-review <ver
 Reference screenshots by relative path (`./mobile.png`) when they're kept in
 the same folder. In compare mode the report lists regressed/fixed/unchanged
 instead of re-describing known findings.
+
+Alongside REPORT.md, write `.ui-review/<page-slug>/report.json` — the
+machine-readable summary the CI gate in [references/ci.md](references/ci.md)
+reads:
+
+```json
+{ "url": "...", "date": "...", "mode": "standard",
+  "counts": { "broken": 1, "degraded": 2, "polish": 0 },
+  "findings": [ { "severity": "broken", "breakpoint": "mobile",
+    "category": "horizontalScroll", "selector": "div.hero",
+    "source": "src/components/Hero.css:12", "fix": "max-width:100%" } ] }
+```

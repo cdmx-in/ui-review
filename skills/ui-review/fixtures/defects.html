@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- detect.js self-test fixture. One seeded defect per category (ids match
+     scripts/selftest.mjs MUST_FIND) plus negative controls that must never
+     be flagged (neg-* ids). No meta viewport on purpose: viewportMetaMissing. -->
+<html>
+<head><title>detect.js fixture</title><style>body{font-family:sans-serif;margin:16px}</style></head>
+<body>
+  <!-- horizontalScroll + offenders -->
+  <div id="wide" style="width:2000px;height:20px;background:#eee"></div>
+
+  <!-- clippedText: overflow hidden, no ellipsis -->
+  <div id="clipped" style="width:120px;overflow:hidden;white-space:nowrap">This text is far too long for its container and clips</div>
+
+  <!-- overlaps: two absolutely positioned text blocks -->
+  <div style="position:relative;height:48px">
+    <div id="overlap-a" style="position:absolute;left:0;top:0;width:140px">Overlapping A text block</div>
+    <div id="overlap-b" style="position:absolute;left:30px;top:4px;width:140px">Overlapping B text block</div>
+  </div>
+
+  <!-- tinyTapTargets: 16x16 button -->
+  <button id="tiny" style="width:16px;height:16px;padding:0">x</button>
+
+  <!-- brokenImages -->
+  <img id="broken" src="missing.png" alt="">
+
+  <!-- distortedImages: 1x1 png rendered 200x50 (object-fit: fill default) -->
+  <img id="distorted" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" style="width:200px;height:50px">
+
+  <!-- overflowingMedia: img wider than its container -->
+  <div style="width:150px"><img id="overflow-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" style="width:300px;height:24px;max-width:none"></div>
+
+  <!-- smallText -->
+  <span id="small" style="font-size:10px">tiny text</span>
+
+  <!-- wrappedControls: narrow button, label wraps -->
+  <button id="wrapped" style="width:90px">This long button label definitely wraps lines</button>
+
+  <!-- placeholderText -->
+  <span id="placeholder">undefined</span>
+
+  <!-- shadow DOM piercing: small text inside an open shadow root -->
+  <div id="shadow-host"></div>
+
+  <!-- fixedOverlays: full-width fixed bar -->
+  <div id="stickybar" style="position:fixed;left:0;bottom:0;width:100%;height:120px;background:#0002"></div>
+
+  <!-- negative controls: must NOT appear in any finding -->
+  <div id="neg-ellipsis" style="width:120px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Truncated correctly with an ellipsis marker</div>
+  <div id="neg-scroll" style="width:120px;height:40px;overflow:auto">Scrollable container whose content is allowed to overflow because the user can scroll it</div>
+  <p>Prose with an <a id="neg-inline-link" href="#">inline link</a> in a sentence.</p>
+  <button id="neg-iconbtn" style="height:44px;width:200px;white-space:nowrap">Save changes</button>
+
+  <script>
+    document.getElementById("shadow-host").attachShadow({ mode: "open" }).innerHTML =
+      '<span id="shadow-small" style="font-size:9px">shadow small text</span>';
+  </script>
+</body>
+</html>

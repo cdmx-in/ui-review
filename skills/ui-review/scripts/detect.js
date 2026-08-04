@@ -2,7 +2,8 @@
 // Returns JSON: { viewport, viewportMetaMissing, horizontalScroll, offenders,
 //                 clippedText, overlaps, tinyTapTargets, brokenImages,
 //                 distortedImages, overflowingMedia, smallText, wrappedControls,
-//                 placeholderText }
+//                 placeholderText, fixedOverlays }
+// Pierces open shadow roots. Closed shadow roots and iframes are unreachable.
 (() => {
   const CAP = 15; // max findings per category, keeps output readable
   const de = document.documentElement;
@@ -34,7 +35,17 @@
 
   const PLACEHOLDER_RE = /\b(lorem ipsum|undefined|NaN|\[object Object\]|TODO:)/;
 
-  const all = [...document.querySelectorAll("body *")].filter(visible);
+  // walk the DOM including open shadow roots (web-component UIs are invisible
+  // to a plain querySelectorAll)
+  const collectAll = (root, out) => {
+    for (const el of root.querySelectorAll("*")) {
+      out.push(el);
+      if (el.shadowRoot) collectAll(el.shadowRoot, out);
+    }
+    return out;
+  };
+  const everything = collectAll(document.body, []);
+  const all = everything.filter(visible);
   const textLeaves = [];
 
   for (const el of all) {
@@ -75,7 +86,7 @@
   }
 
   // interactive elements: tap-target size + unintended multi-line wrapping
-  for (const el of document.querySelectorAll("a,button,input:not([type=hidden]),select,textarea,[role=button],[role=link]")) {
+  for (const el of everything.filter(e => e.matches("a,button,input:not([type=hidden]),select,textarea,[role=button],[role=link]"))) {
     if (!visible(el)) continue;
     const s = getComputedStyle(el);
     const r = el.getBoundingClientRect();
@@ -103,7 +114,7 @@
     }
   }
 
-  for (const img of document.images) {
+  for (const img of everything.filter(e => e.tagName === "IMG")) {
     if (img.complete && img.naturalWidth === 0 && img.src && issues.brokenImages.length < CAP) {
       issues.brokenImages.push({ src: img.src.slice(0, 120) });
     }
@@ -130,6 +141,26 @@
       }
     }
   }
+
+  // viewport area covered by fixed/sticky bars (headers, cookie banners,
+  // bottom navs) — flag >25% on mobile/tablet as degraded
+  // ponytail: plain area sum of outermost bars, not a rect union — stacked
+  // bars rarely overlap each other
+  const bars = [];
+  for (const el of all) {
+    const s = getComputedStyle(el);
+    if (s.position !== "fixed" && s.position !== "sticky") continue;
+    if (bars.some(b => b.el.contains(el))) continue;
+    const r = el.getBoundingClientRect();
+    const w = Math.min(r.right, vw) - Math.max(r.left, 0);
+    const h = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+    if (w > 0 && h > 0) bars.push({ el, area: w * h });
+  }
+  issues.fixedOverlays = {
+    pct: Math.round(100 * bars.reduce((a, b) => a + b.area, 0) / (vw * vh)),
+    bars: bars.filter(b => b.area / (vw * vh) > 0.05).slice(0, CAP)
+      .map(b => ({ el: sel(b.el), pct: Math.round(100 * b.area / (vw * vh)) })),
+  };
 
   // overlapping text elements (skip ancestor/descendant pairs)
   // ponytail: O(n²) capped at 300 leaves; spatial index if pages get huge

@@ -59,9 +59,20 @@ on:
   stricter gate.
 - **Fixed** findings → note them and suggest refreshing the baseline.
 
-The machine-readable source for the gate is `.ui-review/<slug>/REPORT.md`
-(regressed/fixed/unchanged per breakpoint); grep it for `[broken]` rows that
-aren't in the baseline's KNOWN.md.
+The machine-readable source for the gate is `.ui-review/<slug>/report.json`
+(written alongside REPORT.md on every run):
+
+```bash
+broken=$(jq '.counts.broken' .ui-review/<slug>/report.json)
+if [ "$broken" -gt 0 ]; then
+  jq -r '.findings[] | select(.severity=="broken") | "\(.breakpoint) \(.selector): \(.category)"' \
+    .ui-review/<slug>/report.json
+  exit 1
+fi
+```
+
+If pre-existing broken findings are accepted (listed in KNOWN.md), compare
+against the baseline's counts instead of gating on absolute zero.
 
 ## Keeping it fast
 

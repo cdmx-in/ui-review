@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.2.0 — 2026-08-05
+
+Trust hardening: fewer false positives, honest coverage, testable detector.
+
+- detect.js pierces open shadow roots — web-component UIs (Shoelace, Ionic,
+  custom elements) were previously invisible to every check. Closed roots and
+  iframes remain unreachable and are now documented as surface the report
+  must call out, not silently skip.
+- Workflow settles rendering before any measurement (freeze
+  animations/transitions, await `document.fonts.ready`) — kills false
+  clipped/wrapped/overlap findings and flaky pixel diffs.
+- Regression mode: optional `.ui-review/<slug>/ignore.txt` masks dynamic
+  regions (timestamps, live counters, carousels) before every screenshot, so
+  compare runs stop failing forever on live data.
+- New `fixedOverlays` detect.js category: % of viewport covered by
+  fixed/sticky bars; degraded above ~25% on mobile/tablet.
+- Reports include machine-readable `report.json`; the references/ci.md gate
+  now reads it with jq instead of grepping REPORT.md.
+- Detector self-test: `fixtures/defects.html` (one seeded defect per
+  category, a shadow-DOM case, and negative controls including the
+  fixed-height-button false positive from 1.0.1) + `scripts/selftest.mjs`.
+  Run with `node skills/ui-review/scripts/selftest.mjs`.
+
 ## 1.1.0 — 2026-08-05
 
 - "When to run this without being asked": the calling agent now runs a
