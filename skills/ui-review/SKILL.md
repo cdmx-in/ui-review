@@ -20,6 +20,9 @@ screenshot inspection. Report findings; fix only if the user asked.
 - **Codebase**: if the URL is a local dev server and the project source is in
   the working directory, findings must be mapped to source files (see
   "Codebase mapping" below).
+- **Auth**: if the page sits behind a login wall, log in once via
+  `agent-browser fill` / `click` before the breakpoint loop. Don't close the
+  browser mid-review — that drops the session and forces a re-login.
 
 ## Breakpoints
 
@@ -32,10 +35,14 @@ screenshot inspection. Report findings; fix only if the user asked.
 
 ## Workflow
 
-Work in a scratch dir for screenshots. `DETECT` = this skill's
+Work in a scratch dir for screenshots — create it first, and **always use
+absolute paths for file arguments** (screenshot output, diff baselines):
+agent-browser resolves relative paths against its own process cwd, not your
+shell's, and fails with "No such file or directory". `DETECT` = this skill's
 `scripts/detect.js` (resolve path relative to this SKILL.md).
 
 ```bash
+SHOTS=<absolute scratch dir>/shots && mkdir -p "$SHOTS"
 agent-browser open <url>
 agent-browser wait --load networkidle
 
@@ -43,14 +50,22 @@ agent-browser wait --load networkidle
 agent-browser set viewport 360 800
 agent-browser wait 300                              # allow reflow/media queries
 agent-browser eval --stdin < <DETECT>               # -> JSON defect report
-agent-browser screenshot --full shots/mobile.png
+agent-browser screenshot --full "$SHOTS/mobile.png"
 
 # After all breakpoints:
-agent-browser console                               # console messages
+agent-browser console | grep -E '^\[(warning|error)\]'  # unfiltered output buries real warnings in [debug]/[info] HMR noise
 agent-browser errors                                # page errors
 agent-browser network requests --status 400-599     # failed assets/API calls
 agent-browser close
 ```
+
+If the review target is (or includes) a specific new or changed interactive
+element — a form field, a tag input, a modal — exercise its states as part of
+the standard sweep; don't gate this behind thorough mode. Type an invalid then
+a valid entry, confirm dependent controls (e.g. a Save button) enable/disable
+correctly, open/close and re-check. Recipes:
+[references/interaction.md](references/interaction.md). The full interaction
+pack across the whole page remains a thorough-mode step.
 
 Optional extras (newer agent-browser builds only). Unsupported builds respond
 in either of two ways — generic help text, or a JSON error like
@@ -65,7 +80,11 @@ agent-browser vitals --json                 # CLS / LCP / INP
 ```
 
 Notes:
-- `eval --stdin` returns a JSON string; parse it. Categories:
+- `agent-browser type <selector> <text>` requires the selector — called with
+  text only, it silently does nothing.
+- `eval --stdin` output is JSON-encoded **twice**: parsing once yields a
+  string, not an object — parse that string again to get the report (e.g.
+  `json.loads(json.loads(out))`). Categories:
   `viewportMetaMissing`, `horizontalScroll` + `offenders`, `clippedText`,
   `overlaps`, `tinyTapTargets`, `brokenImages`, `distortedImages`,
   `overflowingMedia`, `smallText`, `wrappedControls`, `placeholderText`.
@@ -101,8 +120,8 @@ them.
 ```bash
 agent-browser set viewport 360 800
 agent-browser eval --stdin < <DETECT>          # -> current JSON
-agent-browser screenshot --full shots/mobile.png
-agent-browser diff screenshot --baseline .ui-review/<slug>/mobile.png -o shots/mobile-diff.png -t 0.2
+agent-browser screenshot --full "$SHOTS/mobile.png"
+agent-browser diff screenshot --baseline "<project abs path>/.ui-review/<slug>/mobile.png" -o "$SHOTS/mobile-diff.png" -t 0.2
 ```
 
 Then triage cheaply, in order:

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.1 — 2026-08-04
+
+Documentation fixes from first field use, ranked by time each cost in practice.
+
+- Workflow now creates the screenshot dir up front and uses absolute paths for
+  all file arguments — agent-browser resolves relative paths against its own
+  process cwd, so `shots/mobile.png` silently failed.
+- Documented that `eval --stdin` output is JSON-encoded twice (parse, then
+  parse the resulting string again).
+- Documented that `type` requires a selector — text-only invocation silently
+  no-ops.
+- Console step filters to `[warning]`/`[error]` lines so real findings aren't
+  buried in HMR/debug noise.
+- Inputs section covers authenticated pages: log in once before the breakpoint
+  loop, don't close the browser mid-review.
+- Standard sweep now exercises interactive states of the specific element under
+  review (invalid/valid input, dependent-control enable/disable) by default,
+  instead of gating that behind thorough mode.
+
 ## 1.0.0 — 2026-08-02
 
 Initial release.
