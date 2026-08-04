@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.1.0 — 2026-08-05
+
+- "When to run this without being asked": the calling agent now runs a
+  standard pass automatically after editing frontend code (before reporting
+  the task complete) and as the first diagnostic step when a user reports a
+  visual/layout bug.
+- Standard sweep selects the widest realistic list/table row (most
+  tags/badges, longest strings) before running detect.js, instead of
+  reviewing whatever renders first — pulled forward from thorough mode's
+  content-stress pack.
+- New component mode (`/ui-review components`): audit the shared UI library
+  via Storybook or a synthesized kitchen-sink page, so a shared-primitive
+  defect is caught once at the source instead of by luck per page.
+- New `references/ci.md`: pre-commit/CI recipe for baseline + compare gating
+  on frontend diffs — monorepo baseline layout, fail-on-broken severity
+  policy, changed-routes-only for speed.
+- Compare mode reports "no baseline exists for this route" as an explicit
+  finding instead of silently falling back to a fresh review.
+- Multi-page reports collapse the same finding on 3+ pages into one
+  root-cause finding attributed to the shared component, with affected pages
+  listed under it.
+
 ## 1.0.1 — 2026-08-04
 
 Documentation fixes from first field use, ranked by time each cost in practice.

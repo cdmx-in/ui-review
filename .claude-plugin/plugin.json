@@ -1,5 +1,5 @@
 {
   "name": "ui-review",
   "description": "Automated UI/UX review via agent-browser: overflow, wrapping, responsiveness across breakpoints, with baseline/diff regression mode.",
-  "version": "1.0.1"
+  "version": "1.1.0"
 }

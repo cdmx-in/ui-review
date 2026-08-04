@@ -1,6 +1,6 @@
 ---
 name: ui-review
-description: Automated UI/UX review of a web page or app using the agent-browser CLI. Detects text overflow/clipping, awkward wrapping, horizontal scroll, overlapping elements, tiny tap targets, broken/distorted images, placeholder-text leakage, and responsiveness defects across common resolutions (mobile/tablet/laptop/desktop), then visually inspects screenshots. When run against a local dev server with the codebase available, maps findings back to source files and can fix them. Supports regression mode - save a baseline, later runs diff against it and only inspect what changed. Trigger with /ui-review [url], "/ui-review baseline", "review the UI", "check responsiveness", "find layout bugs", "text overflow check".
+description: Automated UI/UX review of a web page or app using the agent-browser CLI. Detects text overflow/clipping, awkward wrapping, horizontal scroll, overlapping elements, tiny tap targets, broken/distorted images, placeholder-text leakage, and responsiveness defects across common resolutions (mobile/tablet/laptop/desktop), then visually inspects screenshots. When run against a local dev server with the codebase available, maps findings back to source files and can fix them. Supports regression mode - save a baseline, later runs diff against it and only inspect what changed. Trigger with /ui-review [url], "/ui-review baseline", "/ui-review components" (shared component library audit), "review the UI", "check responsiveness", "find layout bugs", "text overflow check".
 allowed-tools: Bash(agent-browser:*), Read, Glob, Grep
 ---
 
@@ -9,6 +9,20 @@ allowed-tools: Bash(agent-browser:*), Read, Glob, Grep
 Audit a web page across common breakpoints with `agent-browser`, combining
 programmatic in-page checks (this skill's `scripts/detect.js`) with visual
 screenshot inspection. Report findings; fix only if the user asked.
+
+## When to run this without being asked
+
+Two situations warrant a standard pass even when nobody typed `/ui-review`:
+
+- **You just edited a frontend page or component** and are about to report the
+  task complete: run the standard sweep on the affected route(s) first. If the
+  project's CLAUDE.md has a house rule like "screenshot + brand-test-matrix
+  measurements before claiming a UI change works", this review is how you
+  satisfy it — don't wait to be told.
+- **The user reports a visual or layout bug**: run the review on that route as
+  the first diagnostic step. detect.js + per-breakpoint screenshots localize
+  the defect faster and more completely than manually eyeballing one
+  screenshot.
 
 ## Inputs
 
@@ -45,6 +59,13 @@ shell's, and fails with "No such file or directory". `DETECT` = this skill's
 SHOTS=<absolute scratch dir>/shots && mkdir -p "$SHOTS"
 agent-browser open <url>
 agent-browser wait --load networkidle
+
+# If the page renders a list or table: before the breakpoint loop, select or
+# load the row/item with the widest realistic content in the current data
+# (most tags/badges, longest strings) — not the first row, not an empty state.
+# Wrapping/overflow bugs concentrate in the widest row. (Synthetic-injection
+# variants live in thorough mode's content-stress.md; this cheap version is
+# always on.)
 
 # Per breakpoint (repeat for each row of the table):
 agent-browser set viewport 360 800
@@ -142,6 +163,15 @@ Report only deltas: `regressed / fixed / unchanged` per breakpoint, plus
 anything in KNOWN.md that got fixed (suggest pruning it). After the user
 confirms current state is good, offer to refresh the baseline.
 
+If baselines exist for other pages in this project but not for the requested
+URL, the report must state it as its own finding — "no baseline exists for
+this route — it has never been reviewed" — before falling back to a fresh
+standard review. Untested surface must be visible, not indistinguishable from
+"reviewed and clean".
+
+To run baseline + compare automatically on frontend diffs (pre-commit hook or
+CI job), see [references/ci.md](references/ci.md).
+
 ## Thorough mode (deep QA scenarios)
 
 `/ui-review thorough [url]` (or "deep review", "full QA"). Run the standard
@@ -169,6 +199,26 @@ Rules:
   device/engine", never as confirmed failures.
 - Within each pack, run the top-tier recipes first; go deeper only where the
   page type warrants it.
+
+## Component mode (shared UI primitives)
+
+`/ui-review components [url]` — audit the shared component library directly
+instead of one page at a time. A defect in a shared primitive (a Button
+missing `white-space: nowrap`, a Badge that clips past 13 characters) has
+blast radius across every page that uses it; the page-by-page workflow only
+catches it by luck, once per page.
+
+- If the project has a Storybook or component-showcase route, review that:
+  open each story/section and run the standard per-breakpoint detect +
+  screenshot loop against it.
+- Otherwise, synthesize a temporary kitchen-sink page: one scratch route (or
+  a static HTML file the dev server can serve) rendering every variant and
+  size of the app's core primitives — buttons, badges, inputs, tags — each
+  with both a short label and a realistically long one. Run the standard
+  sweep against it, then delete the scratch page.
+
+Report findings per component (`file:line` of the component source), not per
+page.
 
 ## Visual inspection (mandatory)
 
@@ -207,6 +257,12 @@ One section per breakpoint, ranked by severity. For each finding:
 Severity: **broken** (content unusable/unreadable) > **degraded** (works but
 looks wrong) > **polish**. End with console/page errors and failed network
 requests if any. If everything passes, say so plainly — don't invent findings.
+
+Multi-page ("whole app") sweeps: when the same selector pattern (identical
+class list, or the same component file via codebase mapping) produces the same
+finding category on 3+ pages, collapse them into ONE finding attributed to the
+shared component/file, with the affected pages listed under it. One root
+cause, one row — N duplicate per-page rows obscure that it's a single fix.
 
 Besides the chat summary, always write the full report to
 `.ui-review/<page-slug>/REPORT.md` in the reviewed project (same folder the
